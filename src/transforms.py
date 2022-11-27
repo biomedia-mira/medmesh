@@ -93,29 +93,4 @@ class SHOTFeatures():
         else:
             data.x = torch.cat((data.x, shot_features), dim = 1).float()
         return data
-    
-class DisplacementFeatures():
-    def __call__(self, data):
-        ref_pvpolydata = pv.read(data.vtkpath)
-        npts = len(ref_pvpolydata.points)
-        fname = data.vtkpath[:-6] #remove last two digits and extension (.vtk)
-        t_dist = np.zeros(npts)
-        for t in range(1,50):
-            t_str = str(t)
-            t_digits = t_str.zfill(2) #leading zeros for timepoints 1-49
-            tmp_fname = fname + t_digits + '.vtk'
-            pvpolydata = pv.read(tmp_fname)
-            
-            p_dists=[]
-            for p in range(npts):
-                p_dists = np.append(p_dists, np.linalg.norm(pvpolydata.points[p] - ref_pvpolydata.points[p]))
 
-            t_dist = np.vstack( (t_dist, p_dists) )
-            
-        if data.x is None:
-            data.x = torch.tensor(t_dist.transpose(), dtype=torch.float)
-        else:
-            data.x = torch.cat((data.x, torch.tensor(t_dist.transpose(), dtype=torch.float)), dim = 1).float()
-        return data
-            
-            

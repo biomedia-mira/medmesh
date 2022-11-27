@@ -42,7 +42,7 @@ substructures = ['BrStem', 'L_Hipp', 'R_Hipp', 'L_Accu', 'R_Accu', 'L_Amyg', 'R_
 shared_sub_model = True
 
 pre_processing = T.Compose([T.FaceToEdge()])
-augmentation = T.Compose([T.RandomTranslate(0.1)])
+augmentation = T.Compose([T.RandomJitter(0.1)])
 features = T.Compose([T.Constant(value=1), T.Spherical(), FPFHFeatures()])
 
 train_transform = T.Compose([pre_processing, augmentation, features])
