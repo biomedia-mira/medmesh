@@ -15,7 +15,7 @@ from tqdm import tqdm
 from collections import defaultdict
 from copy import copy
 
-from utils.transforms import MultiGraphTransform
+from src.transforms import MultiGraphTransform
 
 
 def _subdict(): return defaultdict(str)
