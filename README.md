@@ -67,6 +67,11 @@ Install PyTorch Geometric:
    ```shell
    pip install matplotlib jupyter pandas seaborn scikit-learn tensorboard pytorch-lightning cmake openmesh vtk pyvista open3d
    ```
+   
+   For conda users, openmesh may have to be installed via
+   ```shell
+   conda install -c conda-forge openmesh-python
+   ```
 
 ### How to use
 
