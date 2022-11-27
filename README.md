@@ -44,12 +44,13 @@ Check out instructions for [how to install PyTorch](https://pytorch.org/get-star
 
 ### Install PyTorch Geometric
 
-Check out instructions for [how to install PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html#) using conda or pip.
+Check out instructions for [how to install PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html#) using conda or pip. Make sure to also install the package `torch-spline-conv`.
 
 ### Install additional packages:
    
    ```shell
-   pip install matplotlib jupyter pandas seaborn scikit-learn tensorboard pytorch-lightning cmake openmesh vtk pyvista open3d
+   pip install matplotlib jupyter pandas seaborn scikit-learn tensorboard pytorch-lightning cmake vtk pyvista open3d
+   pip install openmesh
    ```
    
    For conda users, openmesh may have to be installed via
