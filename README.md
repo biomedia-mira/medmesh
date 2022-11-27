@@ -14,7 +14,7 @@ The brain imaging datasets used in the paper are all publicly available but cann
 
 UK Biobank provides pre-processed data including the meshes of the subcortical structures. All other datasets were processed by us using [FSL-FIRST](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FIRST/UserGuide) to segment the 15 different brain structures.
 
-We can only provide the meshes for the IXI dataset, allowing for the code to be run for an example of sex classification when trained and tested on IXI subsets. Please [download the IXI meshes](https://) and unzip in the `data/brain` subfolder.
+We can only provide the meshes for the IXI dataset, allowing for the code to be run for an example of sex classification when trained and tested on IXI subsets. Please [download the IXI meshes](https://imperialcollegelondon.box.com/s/qasj750gwk0e62mncy9pycp2bznsho7m) and unzip in the `data/brain` subfolder.
 
 ## Code
 
@@ -72,7 +72,7 @@ Install PyTorch Geometric:
 
 In order to train and test an example sex classification model with the IXI dataset:
 
-1. Download the [IXI meshes](https://), unzip in the `data/brain` subfolder.
+1. Download the [IXI meshes](https://imperialcollegelondon.box.com/s/qasj750gwk0e62mncy9pycp2bznsho7m), unzip in the `data/brain` subfolder.
 2. Run the the script [`brain_shape_classification.py`](brain_shape_classification.py).
 
 ## License
