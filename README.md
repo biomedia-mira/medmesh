@@ -28,18 +28,6 @@ Create and activate a Python 3 conda environment:
    conda create -n pymesh python=3.8
    conda activate pymesh
    ```
-   
-Install PyTorch using conda (for CUDA Toolkit 11.3):
-   
-   ```shell
-   conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
-   ```
-
-Install PyTorch Geometric:
-   
-   ```shell
-   conda install pyg -c pyg -c conda-forge
-   ```
 
 ### Setup Python environment using virtualenv
 
@@ -49,20 +37,16 @@ Create and activate a Python 3 virtual environment:
    virtualenv -p python3.8 <path_to_envs>/pymesh
    source <path_to_envs>/pymesh/bin/activate
    ```
-   
-Install PyTorch using pip:
-   
-   ```shell
-   pip install torch torchvision
-   ```
 
-Install PyTorch Geometric:
-   
-   ```shell
-   pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.10.0+cu113.html
-   ```
+### Install PyTorch
 
-### Install additional Python packages:
+Check out instructions for [how to install PyTorch](https://pytorch.org/get-started/locally/) using conda or pip.
+
+### Install PyTorch Geometric
+
+Check out instructions for [how to install PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html#) using conda or pip.
+
+### Install additional packages:
    
    ```shell
    pip install matplotlib jupyter pandas seaborn scikit-learn tensorboard pytorch-lightning cmake openmesh vtk pyvista open3d
