@@ -107,7 +107,7 @@ class MultiGraphClassificationNet(pl.LightningModule):
         lab = batch['y'].squeeze()
         loss = F.cross_entropy(out, lab)
         prob = torch.softmax(out, dim=1)
-        auc = auroc(prob, lab, num_classes=self.num_outputs, average='macro')
+        auc = auroc(prob, lab, num_classes=self.num_outputs, average='macro', task='multiclass')
         return loss, auc
 
     def training_step(self, batch, batch_idx):
