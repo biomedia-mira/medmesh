@@ -69,10 +69,10 @@ def save_predictions(model, output_fname):
         counts.append(c)
     print(counts)
 
-    auc_per_class = auroc(preds, targets, num_classes=num_classes, average='none')
-    auc_avg = auroc(preds, targets, num_classes=num_classes, average='macro')
-    acc_per_class = accuracy(preds, targets, num_classes=num_classes, average='none')
-    acc_avg = accuracy(preds, targets, num_classes=num_classes, average='macro')
+    auc_per_class = auroc(preds, targets, num_classes=num_classes, average='none', task='multiclass')
+    auc_avg = auroc(preds, targets, num_classes=num_classes, average='macro', task='multiclass')
+    acc_per_class = accuracy(preds, targets, num_classes=num_classes, average='none', task='multiclass')
+    acc_avg = accuracy(preds, targets, num_classes=num_classes, average='macro', task='multiclass')
 
     print('AUC per-class')
     print(auc_per_class)
