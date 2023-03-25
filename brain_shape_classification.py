@@ -146,9 +146,10 @@ def main(hparams):
     checkpoint_callback = ModelCheckpoint(monitor="val_auc", mode='max')
     trainer = pl.Trainer(
         callbacks=[checkpoint_callback],
-        log_every_n_steps = 5,
+        log_every_n_steps=5,
         max_epochs=epochs,
-        gpus=hparams.gpus,
+        accelerator=hparams.dev,
+        devices=1,
         logger=TensorBoardLogger('output/' + target_label, name=out_name),
     )
     trainer.logger._default_hp_metric = False
@@ -210,8 +211,7 @@ def main(hparams):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--gpus', default=1)
-    parser.add_argument('--dev', default=0)
+    parser.add_argument('--dev', default='cpu')
     args = parser.parse_args()
 
     main(args)
