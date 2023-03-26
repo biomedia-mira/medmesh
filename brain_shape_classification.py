@@ -40,6 +40,7 @@ train_split = 0.8
 val_split = 0.1
 substructures = ['BrStem', 'L_Hipp', 'R_Hipp', 'L_Accu', 'R_Accu', 'L_Amyg', 'R_Amyg', 'L_Puta', 'R_Puta', 'L_Thal', 'R_Thal', 'L_Pall', 'R_Pall', 'L_Caud', 'R_Caud']
 shared_sub_model = True
+sub_model = SplineConvNet
 
 pre_processing = T.Compose([T.FaceToEdge()])
 augmentation = T.Compose([T.RandomJitter(0.1)])
@@ -134,13 +135,13 @@ def main(hparams):
     print('=============================================================')
 
     # Create output directory
-    out_name = 'splineCNN-FPFH'
+    out_name = 'SplineConvNet-FPFH'
     out_dir = 'output/' + target_label + '/' + out_name
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
     # model
-    model = MultiGraphClassificationNet(num_features=data.dataset.num_features, hidden_features=hidden_features, num_outputs=num_classes, num_graphs=len(substructures), sub_model=SplineConvNet, shared_sub_model=shared_sub_model)
+    model = MultiGraphClassificationNet(num_features=data.dataset.num_features, hidden_features=hidden_features, num_outputs=num_classes, num_graphs=len(substructures), sub_model=sub_model, shared_sub_model=shared_sub_model)
 
     # train
     checkpoint_callback = ModelCheckpoint(monitor="val_auc", mode='max')
@@ -155,7 +156,7 @@ def main(hparams):
     trainer.logger._default_hp_metric = False
     trainer.fit(model, data)
 
-    model = MultiGraphClassificationNet.load_from_checkpoint(trainer.checkpoint_callback.best_model_path, num_features=data.dataset.num_features, hidden_features=hidden_features, num_outputs=num_classes, num_graphs=len(substructures), sub_model=SplineConvNet, shared_sub_model=shared_sub_model)
+    model = MultiGraphClassificationNet.load_from_checkpoint(trainer.checkpoint_callback.best_model_path, num_features=data.dataset.num_features, hidden_features=hidden_features, num_outputs=num_classes, num_graphs=len(substructures), sub_model=sub_model, shared_sub_model=shared_sub_model)
 
     print('=============================================================')
     print('Testing on IXI')
