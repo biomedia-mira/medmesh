@@ -22,34 +22,6 @@ def _subdict(): return defaultdict(str)
 
 
 class UKBBDataset(Dataset):
-    """
-    Path should have the following directory structure:
-    /path
-    ├── 1000000
-    │   ├── T1_first-BrStem_first.vtk
-    │   ├── T1_first-L_Accu_first.vtk
-    │   ├── T1_first-L_Amyg_first.vtk
-    │   ├── T1_first-L_Caud_first.vtk
-    │   ├── T1_first-L_Hipp_first.vtk
-    │   ├── T1_first-L_Pall_first.vtk
-    │   ├── T1_first-L_Puta_first.vtk
-    │   ├── T1_first-L_Thal_first.vtk
-    │   ├── T1_first-R_Accu_first.vtk
-    │   ├── T1_first-R_Amyg_first.vtk
-    │   ├── T1_first-R_Caud_first.vtk
-    │   ├── T1_first-R_Hipp_first.vtk
-    │   ├── T1_first-R_Pall_first.vtk
-    │   ├── T1_first-R_Puta_first.vtk
-    │   └── T1_first-R_Thal_first.vtk
-    ├── 1000001
-    │   ├── T1_first-BrStem_first.vtk
-        ...
-    ...
-
-    We expect that there should be 7 meshes for the left and right side of the
-    brain and another mesh for the brain stem.
-    """
-
     def __init__(self, path: str, substructures: List[str], metadata_file: str, target_label: str, transform: T.Compose = None, reload_path: bool = False, cache_path: str = '.'):
         super().__init__(path, transform=MultiGraphTransform(transform=transform), pre_transform=None, pre_filter=None)
         self.path = path
@@ -149,6 +121,8 @@ class UKBBDataset(Dataset):
             mesh = self.get_data_from_polydata(paths[substructure])
             meshes.append(mesh)
         sample = {}
+        sample['id'] = str(subject_id)
+        sample['dataset'] = 'ukbb'
         sample['x'] = meshes
         sample['age'] = torch.from_numpy(np.array(labels['age'], dtype='float32'))
         sample['sex'] = torch.from_numpy(np.array(labels['sex'], dtype='int64'))
@@ -260,6 +234,8 @@ class CamCANDataset(Dataset):
             mesh = self.get_data_from_polydata(paths[substructure])
             meshes.append(mesh)
         sample = {}
+        sample['id'] = str(subject_id)
+        sample['dataset'] = 'camcan'
         sample['x'] = meshes
         sample['age'] = torch.from_numpy(np.array(labels['age'], dtype='float32'))
         sample['sex'] = torch.from_numpy(np.array(labels['sex'], dtype='int64'))
@@ -383,6 +359,8 @@ class IXIDataset(Dataset):
             mesh = self.get_data_from_polydata(paths[substructure])
             meshes.append(mesh)
         sample = {}
+        sample['id'] = str(subject_id)
+        sample['dataset'] = 'ixi'
         sample['x'] = meshes
         sample['age'] = torch.from_numpy(np.array(labels['age'], dtype='float32'))
         sample['sex'] = torch.from_numpy(np.array(labels['sex'], dtype='int64'))
@@ -501,6 +479,8 @@ class OASIS3Dataset(Dataset):
             mesh = self.get_data_from_polydata(paths[substructure])
             meshes.append(mesh)
         sample = {}
+        sample['id'] = str(subject_id)
+        sample['dataset'] = 'oasis3'
         sample['x'] = meshes
         sample['age'] = torch.from_numpy(np.array(labels['age'], dtype='float32'))
         sample['sex'] = torch.from_numpy(np.array(labels['sex'], dtype='int64'))
@@ -515,7 +495,7 @@ class OASIS3Dataset(Dataset):
 
 
 class MeshDataModule(pl.LightningDataModule):
-    def __init__(self, dataset, data_path, metadata_file, target_label, cache_path, train_split, val_split, substructures, train_transform, test_transform, batch_size, num_workers):
+    def __init__(self, dataset, data_path, metadata_file, target_label, cache_path, train_split, val_split, substructures, train_transform, test_transform, batch_size, num_workers, train_set=None, test_set=None, val_set=None):
         super().__init__()
 
         self.batch_size = batch_size
@@ -536,14 +516,31 @@ class MeshDataModule(pl.LightningDataModule):
         test_length = total_length - dev_length
         val_length = int(val_split * dev_length)
         train_length = dev_length - val_length
+        
+        if train_set is not None and test_set is not None and val_set is not None:
+            self.train_set = copy(train_set)
+            self.test_set = copy(test_set)
+            self.val_set = copy(val_set)
+        else:
+            self.train_set, self.val_set, self.test_set = torch.utils.data.random_split(
+                self.dataset,
+                lengths=[train_length, val_length, test_length]
+            )
+            
+        self.test_set.indices.sort()
 
-        self.train_set, self.val_set, self.test_set = torch.utils.data.random_split(
-            self.dataset,
-            lengths=[train_length, val_length, test_length]
-        )
+        self.test_set.indices.sort()
 
         self.train_set.dataset = copy(self.dataset)
         self.train_set.dataset.transform = MultiGraphTransform(transform=train_transform)
+
+
+    def add_data(self, datamodule):
+        self.dataset = torch.utils.data.ConcatDataset([self.dataset, datamodule.dataset])
+        self.train_set = torch.utils.data.ConcatDataset([self.train_set, datamodule.train_set])
+        self.val_set = torch.utils.data.ConcatDataset([self.val_set, datamodule.val_set])
+        self.test_set = torch.utils.data.ConcatDataset([self.test_set, datamodule.test_set])
+
 
     def train_dataloader(self):
         return DataLoader(self.train_set, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)

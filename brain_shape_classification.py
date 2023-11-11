@@ -40,9 +40,9 @@ train_split = 0.8
 val_split = 0.1
 substructures = ['BrStem', 'L_Hipp', 'R_Hipp', 'L_Accu', 'R_Accu', 'L_Amyg', 'R_Amyg', 'L_Puta', 'R_Puta', 'L_Thal', 'R_Thal', 'L_Pall', 'R_Pall', 'L_Caud', 'R_Caud']
 shared_sub_model = True
-sub_model = SplineConvNet
+sub_model = GCNConvNet
 
-pre_processing = T.Compose([T.FaceToEdge()])
+pre_processing = T.Compose([T.FaceToEdge(remove_faces = False)])
 augmentation = T.Compose([T.RandomJitter(0.1)])
 features = T.Compose([T.Constant(value=1), T.Spherical(), FPFHFeatures()])
 
@@ -51,7 +51,7 @@ test_transform = T.Compose([pre_processing, features])
 
 target_label = 'sex'
 
-epochs = 50
+epochs = 30
 batch_size = 128
 num_workers = 4
 hidden_features = 32
@@ -60,8 +60,13 @@ num_classes = 2
 
 def save_predictions(model, output_fname):
 
+    embds = torch.cat(model.embeddings, dim=0)
+    fc1 = torch.cat(model.fc1_out, dim=0)
+    fc2 = torch.cat(model.fc2_out, dim=0)
     preds = torch.cat(model.predictions, dim=0)
     targets = torch.cat(model.targets, dim=0)
+    subject_ids = [id for sublist in model.subject_ids for id in sublist]
+    dataset_names = [dataset for sublist in model.dataset_names for dataset in sublist]
 
     counts = []
     for i in range(0, num_classes):
@@ -87,10 +92,19 @@ def save_predictions(model, output_fname):
     print('ACC average')
     print(acc_avg)
 
-    cols_names = ['class_' + str(i) for i in range(0, num_classes)]
-
-    df = pd.DataFrame(data=preds.cpu().numpy(), columns=cols_names)
+    cols_names_preds = ['class_' + str(i) for i in range(0, num_classes)]
+    cols_names_fc1 = ['fc1_' + str(i) for i in range(0, fc1.size(dim=1))]
+    cols_names_fc2 = ['fc2_' + str(i) for i in range(0, fc2.size(dim=1))]
+    cols_names_embds = ['embds_' + str(i) for i in range(0, embds.size(dim=1))]
+    
+    df = pd.DataFrame(data=preds.cpu().numpy(), columns=cols_names_preds)    
     df['target'] = targets.cpu().numpy()
+    df['subject_id'] = subject_ids
+    df['dataset_name'] = dataset_names
+    df_embds = pd.DataFrame(data=embds.cpu().numpy(), columns=cols_names_embds)
+    df_fc1 = pd.DataFrame(data=fc1.cpu().numpy(), columns=cols_names_fc1)
+    df_fc2 = pd.DataFrame(data=fc2.cpu().numpy(), columns=cols_names_fc2)
+    df = pd.concat([df, df_embds, df_fc1, df_fc2], axis=1)
     df.to_csv(output_fname, index=False)
 
 
@@ -119,9 +133,10 @@ def main(hparams):
     print(f'Testing: {len(data.test_set)}')
     print()
     print('=============================================================')
-    sample = data.train_set[0]['x']
+    sample = data.dataset[0]['x']
+    num_features = sample[0].num_features
     print(f'Number of sub-graphs: {len(sample)}')
-    print(f'Number of node features: {data.dataset.num_features}')
+    print(f'Number of node features: {num_features}')
     for i, graph in enumerate(sample):
         print('-------------------------------------------------------------')
         print(graph)
@@ -135,13 +150,13 @@ def main(hparams):
     print('=============================================================')
 
     # Create output directory
-    out_name = 'SplineConvNet-FPFH'
+    out_name = sub_model.__name__ + '-FPFH-shared-no-reg'
     out_dir = 'output/' + target_label + '/' + out_name
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
     # model
-    model = MultiGraphClassificationNet(num_features=data.dataset.num_features, hidden_features=hidden_features, num_outputs=num_classes, num_graphs=len(substructures), sub_model=sub_model, shared_sub_model=shared_sub_model)
+    model = MultiGraphClassificationNet(num_features=num_features, hidden_features=hidden_features, num_outputs=num_classes, num_graphs=len(substructures), sub_model=sub_model, shared_sub_model=shared_sub_model)
 
     # train
     checkpoint_callback = ModelCheckpoint(monitor="val_auc", mode='max')
@@ -156,7 +171,7 @@ def main(hparams):
     trainer.logger._default_hp_metric = False
     trainer.fit(model, data)
 
-    model = MultiGraphClassificationNet.load_from_checkpoint(trainer.checkpoint_callback.best_model_path, num_features=data.dataset.num_features, hidden_features=hidden_features, num_outputs=num_classes, num_graphs=len(substructures), sub_model=sub_model, shared_sub_model=shared_sub_model)
+    model = MultiGraphClassificationNet.load_from_checkpoint(trainer.checkpoint_callback.best_model_path, num_features=num_features, hidden_features=hidden_features, num_outputs=num_classes, num_graphs=len(substructures), sub_model=sub_model, shared_sub_model=shared_sub_model)
 
     print('=============================================================')
     print('Testing on IXI')

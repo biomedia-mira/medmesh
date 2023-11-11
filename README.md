@@ -1,7 +1,9 @@
-# A Comparative Study of Graph Neural Networks for Shape Classification in Neuroimaging
+# Graph Neural Networks for Medical Shape Classification
 
-This repository contains the code for the paper
+This repository contains the code for the papers
 > N. Shehata, W. Bain, B. Glocker. [_A Comparative Study of Graph Neural Networks for Shape Classification in Neuroimaging_](https://openreview.net/forum?id=HdCrxrSXZZ-). Proceedings of Machine Learning Research. GeoMedIA Workshop. 2022
+
+> N. Shehata, C. Picarra, A. Kazi, B. Glocker. _The Importance of Model Inspection for Better Understanding Performance Characteristics of Graph Neural Networks_. Under review. 2023
 
 ## Datasets
 
